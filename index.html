@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedM RP Menu — Native RedM Lua Mod Menu for Roleplay Servers</title>
+<meta name="description" content="RedM RP menu: player ESP, aimbot, godmode, teleport, vehicle spawner and noclip — native RedM Lua mod menu for roleplay servers.">
+<style>
+  :root{
+    --bg-0:#070a17;
+    --bg-1:#0b1024;
+    --bg-2:#131a3a;
+    --ink:#e8ecff;
+    --muted:#9aa4c7;
+    --line:rgba(255,255,255,.09);
+    --glass:rgba(18,24,50,.55);
+    --a1:#6ea8ff;
+    --a2:#a78bfa;
+    --a3:#38e8c0;
+    --shadow:0 20px 60px rgba(0,0,0,.45);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 620px at 12% -8%, rgba(110,168,255,.20), transparent 60%),
+      radial-gradient(900px 560px at 88% 4%, rgba(167,139,250,.18), transparent 62%),
+      radial-gradient(800px 700px at 50% 110%, rgba(56,232,192,.10), transparent 65%),
+      linear-gradient(160deg, var(--bg-0) 0%, var(--bg-1) 45%, var(--bg-2) 100%);
+    background-attachment:fixed;
+    min-height:100vh;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  .wrap{width:min(1160px,92vw);margin:0 auto}
+  section{padding:96px 0}
+
+  /* ---------- NAV ---------- */
+  .nav-shell{
+    position:sticky;top:0;z-index:100;
+    padding:14px 0;
+    backdrop-filter:blur(18px) saturate(160%);
+    -webkit-backdrop-filter:blur(18px) saturate(160%);
+    background:linear-gradient(180deg, rgba(10,14,32,.82), rgba(10,14,32,.55));
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:11px;
+    font-weight:800;letter-spacing:.3px;font-size:1.02rem;
+    text-decoration:none;color:var(--ink);white-space:nowrap;
+  }
+  .brand .mark{
+    width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--a1),var(--a2));
+    box-shadow:0 8px 22px rgba(110,168,255,.35);
+    font-size:16px;
+  }
+  .brand b{
+    background:linear-gradient(90deg,#cfe0ff,#b9a8ff);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .nav-links{display:flex;align-items:center;gap:30px}
+  .nav-links a{
+    color:var(--muted);text-decoration:none;font-size:.92rem;font-weight:600;
+    transition:color .2s ease;
+  }
+  .nav-links a:hover{color:#fff}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    font-family:inherit;font-weight:700;font-size:.94rem;
+    padding:12px 22px;border-radius:12px;border:1px solid transparent;
+    text-decoration:none;cursor:pointer;white-space:nowrap;
+    transition:transform .18s ease, box-shadow .22s ease, background .22s ease, border-color .22s ease;
+  }
+  .btn-primary{
+    color:#050817;
+    background:linear-gradient(135deg,var(--a3),var(--a1) 55%,var(--a2));
+    box-shadow:0 10px 30px rgba(110,168,255,.32), inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 42px rgba(110,168,255,.45), inset 0 1px 0 rgba(255,255,255,.6)}
+  .btn-ghost{
+    color:var(--ink);background:rgba(255,255,255,.04);
+    border-color:rgba(255,255,255,.16);
+    backdrop-filter:blur(6px);
+  }
+  .btn-ghost:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.3);transform:translateY(-2px)}
+  .nav .btn{padding:10px 18px;font-size:.88rem}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:88px 0 72px;text-align:center;position:relative}
+  .pill{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:7px 16px;border-radius:999px;
+    font-size:.79rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:#cfe0ff;
+    background:rgba(110,168,255,.10);
+    border:1px solid rgba(110,168,255,.32);
+    box-shadow:0 0 0 4px rgba(110,168,255,.05);
+    margin-bottom:26px;
+  }
+  .pill .dot{
+    width:7px;height:7px;border-radius:50%;background:var(--a3);
+    box-shadow:0 0 10px var(--a3);
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.82)}}
+
+  h1{
+    font-size:clamp(2.15rem,5.4vw,4.15rem);
+    line-height:1.06;letter-spacing:-.03em;font-weight:900;
+    margin:0 auto 22px;max-width:16ch;
+  }
+  .grad-text{
+    background:linear-gradient(100deg,#8fc0ff 0%,#c4b5fd 42%,#38e8c0 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p.lead{
+    max-width:660px;margin:0 auto 34px;
+    color:var(--muted);font-size:clamp(1rem,1.6vw,1.13rem);
+  }
+  .hero-actions{
+    display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:44px;
+  }
+  .hero-actions .btn{padding:15px 30px;font-size:1rem}
+
+  .stats{
+    display:flex;flex-wrap:wrap;gap:14px;justify-content:center;
+  }
+  .chip{
+    display:flex;align-items:center;gap:10px;
+    padding:11px 18px;border-radius:13px;
+    background:var(--glass);
+    border:1px solid var(--line);
+    backdrop-filter:blur(12px);
+    font-size:.87rem;font-weight:600;color:#c3cbe8;
+    box-shadow:0 8px 24px rgba(0,0,0,.22);
+  }
+  .chip strong{color:#fff;font-weight:800}
+  .chip .ico{font-size:1rem;line-height:1}
+
+  /* ---------- SECTION HEADERS ---------- */
+  .sec-head{text-align:center;max-width:640px;margin:0 auto 54px}
+  .sec-kicker{
+    display:inline-block;font-size:.75rem;font-weight:800;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--a1);margin-bottom:12px;
+  }
+  .sec-head h2{
+    font-size:clamp(1.6rem,3.4vw,2.45rem);line-height:1.15;
+    letter-spacing:-.02em;font-weight:900;margin-bottom:14px;
+  }
+  .sec-head p{color:var(--muted);font-size:.98rem}
+
+  /* ---------- FEATURES ---------- */
+  .grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  }
+  .card{
+    position:relative;
+    padding:30px 26px 28px;
+    border-radius:17px;
+    background:linear-gradient(180deg, rgba(24,31,62,.72), rgba(14,19,40,.72));
+    border:1px solid var(--line);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    transition:transform .24s ease, border-color .24s ease, box-shadow .24s ease;
+  }
+  .card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3));
+    opacity:.9;
+  }
+  .card:hover{
+    transform:translateY(-7px);
+    border-color:rgba(110,168,255,.42);
+    box-shadow:0 26px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(110,168,255,.14);
+  }
+  .card .emoji{
+    font-size:1.7rem;line-height:1;display:grid;place-items:center;
+    width:52px;height:52px;border-radius:14px;margin-bottom:18px;
+    background:rgba(110,168,255,.10);
+    border:1px solid rgba(110,168,255,.24);
+  }
+  .card h3{
+    font-size:1.06rem;font-weight:800;letter-spacing:-.01em;margin-bottom:9px;
+  }
+  .card p{color:var(--muted);font-size:.9rem}
+
+  /* ---------- HOW IT WORKS ---------- */
+  .steps{position:relative;max-width:760px;margin:0 auto;padding-left:6px}
+  .steps::before{
+    content:"";position:absolute;left:27px;top:12px;bottom:12px;width:2px;
+    background:linear-gradient(180deg,var(--a1),var(--a2) 55%,var(--a3));
+    opacity:.55;border-radius:2px;
+  }
+  .step{
+    position:relative;display:flex;gap:24px;align-items:flex-start;
+    padding:0 0 40px 0;
+  }
+  .step:last-child{padding-bottom:0}
+  .step .num{
+    position:relative;z-index:1;flex:0 0 56px;
+    width:56px;height:56px;border-radius:50%;
+    display:grid;place-items:center;
+    font-weight:900;font-size:1.1rem;color:#06101f;
+    background:linear-gradient(135deg,var(--a3),var(--a1) 60%,var(--a2));
+    box-shadow:0 0 0 6px rgba(10,14,32,.9), 0 10px 28px rgba(110,168,255,.35);
+  }
+  .step .body{
+    padding:16px 22px;border-radius:15px;flex:1;
+    background:var(--glass);
+    border:1px solid var(--line);
+    backdrop-filter:blur(10px);
+  }
+  .step h3{font-size:1.03rem;font-weight:800;margin-bottom:6px}
+  .step p{color:var(--muted);font-size:.9rem}
+
+  /* ---------- FAQ ---------- */
+  .faq{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:13px}
+  details{
+    border-radius:14px;
+    background:linear-gradient(180deg, rgba(22,29,58,.72), rgba(13,18,38,.72));
+    border:1px solid var(--line);
+    overflow:hidden;
+    transition:border-color .22s ease, box-shadow .22s ease;
+  }
+  details[open]{
+    border-color:rgba(110,168,255,.4);
+    box-shadow:0 0 0 1px rgba(110,168,255,.12), 0 16px 40px rgba(0,0,0,.35);
+  }
+  summary{
+    list-style:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:19px 22px;
+    font-weight:700;font-size:.97rem;
+    transition:color .2s ease;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary:hover{color:#fff}
+  summary .plus{
+    flex:0 0 26px;width:26px;height:26px;
+    display:grid;place-items:center;position:relative;
+    border-radius:8px;
+    background:rgba(110,168,255,.12);
+    border:1px solid rgba(110,168,255,.28);
+    transition:transform .26s ease, background .26s ease;
+  }
+  summary .plus::before,
+  summary .plus::after{
+    content:"";position:absolute;background:#bcd0ff;border-radius:2px;
+    transition:opacity .26s ease, transform .26s ease;
+  }
+  summary .plus::before{width:12px;height:2px}
+  summary .plus::after{width:2px;height:12px}
+  details[open] summary .plus{transform:rotate(180deg);background:rgba(56,232,192,.16);border-color:rgba(56,232,192,.4)}
+  details[open] summary .plus::before{transform:rotate(45deg)}
+  details[open] summary .plus::after{transform:rotate(45deg);opacity:0}
+  details .answer{
+    padding:0 22px 21px 22px;
+    color:var(--muted);font-size:.91rem;
+    border-top:1px solid transparent;
+  }
+
+  /* ---------- CTA BANNER ---------- */
+  .cta-banner{
+    position:relative;overflow:hidden;
+    border-radius:24px;
+    padding:66px 40px;
+    text-align:center;
+    background:linear-gradient(135deg, rgba(30,40,82,.92), rgba(16,21,44,.94));
+    border:1px solid rgba(110,168,255,.26);
+    box-shadow:var(--shadow);
+  }
+  .cta-banner::before{
+    content:"";position:absolute;inset:-40% -10%;
+    background:radial-gradient(circle at 50% 40%, rgba(110,168,255,.36), transparent 58%),
+               radial-gradient(circle at 78% 70%, rgba(56,232,192,.22), transparent 55%);
+    pointer-events:none;
+  }
+  .cta-banner > *{position:relative;z-index:1}
+  .cta-banner h2{
+    font-size:clamp(1.55rem,3.6vw,2.5rem);font-weight:900;letter-spacing:-.02em;
+    margin-bottom:14px;line-height:1.14;
+  }
+  .cta-banner p{
+    color:var(--muted);max-width:560px;margin:0 auto 30px;font-size:.98rem;
+  }
+  .cta-banner .btn{padding:15px 32px;font-size:1rem}
+  .cta-note{margin-top:16px;font-size:.79rem;color:#7f8ab0;letter-spacing:.04em}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid var(--line);
+    padding:34px 0;
+    background:rgba(7,10,23,.55);
+    backdrop-filter:blur(10px);
+  }
+  .foot{
+    display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    font-size:.86rem;color:var(--muted);
+  }
+  .foot a{
+    color:#c3cbe8;text-decoration:none;font-weight:600;
+    transition:color .2s ease;
+  }
+  .foot a:hover{color:#fff}
+  .foot .links{display:flex;gap:22px}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:960px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+    section{padding:76px 0}
+  }
+  @media (max-width:640px){
+    .nav-links{display:none}
+    .nav-shell{padding:11px 0}
+    .brand{font-size:.94rem}
+    .brand .mark{width:30px;height:30px;border-radius:9px}
+    .nav .btn{padding:9px 15px;font-size:.82rem}
+    .hero{padding:60px 0 52px}
+    h1{max-width:100%}
+    .hero-actions{flex-direction:column;align-items:stretch}
+    .hero-actions .btn{width:100%}
+    .grid{grid-template-columns:1fr}
+    section{padding:58px 0}
+    .sec-head{margin-bottom:38px}
+    .step{gap:16px}
+    .step .num{flex-basis:46px;width:46px;height:46px;font-size:.98rem}
+    .steps::before{left:22px}
+    .step .body{padding:14px 16px}
+    summary{padding:16px 17px;font-size:.9rem}
+    details .answer{padding:0 17px 18px}
+    .cta-banner{padding:46px 22px;border-radius:19px}
+    .cta-banner .btn{width:100%}
+    .foot{flex-direction:column;text-align:center}
+    .chip{font-size:.82rem;padding:10px 14px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<header class="nav-shell">
+  <div class="wrap nav">
+    <a href="#top" class="brand">
+      <span class="mark">🎮</span>
+      <span>RedM <b>RP Menu</b></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn btn-primary" href="https://gitscore.cc" target="_blank" rel="noopener">Download</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="wrap">
+      <span class="pill"><span class="dot"></span>RedM RP Menu</span>
+      <h1>Native <span class="grad-text">RedM RP Menu</span> for Serious Roleplay Servers</h1>
+      <p class="lead">
+        Player ESP, aimbot, godmode, teleport, vehicle spawner and noclip — all wrapped in a clean,
+        low-latency Lua mod menu built for RedM roleplay. Drop it in, load it up, and take full control
+        of your session on Windows 10 and 11.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://gitscore.cc" target="_blank" rel="noopener">⬇ Download RedM RP Menu</a>
+        <a class="btn btn-ghost" href="https://gitscore.cc" target="_blank" rel="noopener">★ GitHub Repository</a>
+      </div>
+      <div class="stats">
+        <div class="chip"><span class="ico">⬇</span><span><strong>48,200+</strong> downloads</span></div>
+        <div class="chip"><span class="ico">🏷</span><span>v2.4.1</span></div>
+        <div class="chip"><span class="ico">🪟</span><span>Windows 10 / 11</span></div>
+        <div class="chip"><span class="ico">⚡</span><span>Free &amp; open source</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FEATURES ================= -->
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-kicker">Features</span>
+        <h2>Everything you need to run the frontier your way</h2>
+        <p>Six core modules, one lightweight Lua menu — tuned for RedM RP servers and built to stay out of your way.</p>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <div class="emoji">👁️</div>
+          <h3>Player ESP</h3>
+          <p>See nearby players through walls with names, distance and health bars — perfect for keeping tabs on your RP crew or spotting troublemakers first.</p>
+        </article>
+
+        <article class="card">
+          <div class="emoji">🎯</div>
+          <h3>Aimbot</h3>
+          <p>Adjustable FOV, smoothness and target-bone selection for precise, natural-looking aim assist during RedM combat encounters.</p>
+        </article>
+
+        <article class="card">
+          <div class="emoji">🛡️</div>
+          <h3>Godmode</h3>
+          <p>Toggle invulnerability on the fly so griefing, wildlife and stray bullets can't end your roleplay session early.</p>
+        </article>
+
+        <article class="card">
+          <div class="emoji">🌀</div>
+          <h3>Teleport</h3>
+          <p>Jump to waypoints, saved locations or coordinates instantly. Save your favorite RP hubs and move across the map in a single click.</p>
+        </article>
+
+        <article class="card">
+          <div class="emoji">🐎</div>
+          <h3>Vehicle &amp; Mount Spawner</h3>
+          <p>Spawn wagons, carriages and mounts by name or model hash. Give your character the ride your roleplay story deserves.</p>
+        </article>
+
+        <article class="card">
+          <div class="emoji">🕊️</div>
+          <h3>Noclip</h3>
+          <p>Fly freely through the world with adjustable speed and vertical control — scout locations, build scenes, or just explore the map.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-kicker">How it works</span>
+        <h2>Installed and running in under five minutes</h2>
+        <p>No complicated dependency chains. Three steps from download to in-game menu.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <div class="body">
+            <h3>Download the RedM RP Menu package</h3>
+            <p>Grab the latest release from the download page. You'll get the compiled Lua menu files and a short readme covering the folder layout.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">2</div>
+          <div class="body">
+            <h3>Drop the files into your RedM resources</h3>
+            <p>Copy the <strong>redm-rp-menu</strong> folder into your RedM resources directory and add <code>ensure redm-rp-menu</code> to your server or client config.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="num">3</div>
+          <div class="body">
+            <h3>Launch RedM and open the menu</h3>
+            <p>Start the game, join your roleplay server, and press the default toggle key. Every module — ESP, aimbot, godmode, teleport, spawner, noclip — is one click away.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section id="faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-kicker">FAQ</span>
+        <h2>Questions before you install</h2>
+        <p>The most common things people ask about the RedM RP Menu.</p>
+      </div>
+
+      <div class="faq">
+        <details>
+          <summary>Is the RedM RP Menu free to download? <span class="plus"></span></summary>
+          <div class="answer">Yes. The RedM RP Menu is free and open source. You can download the latest build directly from the download page — no account, no paywall
